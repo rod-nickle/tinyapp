@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 
+app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 
 const urlDatabase = {
@@ -9,13 +10,43 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com",
 };
 
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
+/*
+This function generates a random string.
+The only parameter is the length of the string to generate.
+*/
+const generateRandomString = function(charactersLength) {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  
+  // Build the result i.e. the random string by generating a random character.
+  for (let i = 0; i < charactersLength; i++) {
+    // Generate a random number within the length of available characters.
+    let randomNumber = Math.floor(Math.random() * characters.length);
+
+    // Grab the character at that position and add it to our result.
+    result += characters.charAt(randomNumber);
+  }
+  return result;
+};
+
+// app.get("/", (req, res) => {
+//   res.send("Hello!");
+// });
 
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
+});
+
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
+
+app.post("/urls", (req, res) => {
+  // Create the short URL by generating a random string.
+  const shortURL = generateRandomString(6);
+  console.log(req.body, `Short URL: ${shortURL}`); // Log the POST request body to the console
+  res.send("Ok"); // Respond with 'Ok' (we will replace this)
 });
 
 app.get("/urls/:id", (req, res) => {
