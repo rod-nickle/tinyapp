@@ -5,15 +5,20 @@ const PORT = 8080; // default port 8080
 app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 
+/**
+ * This is our database. 🙂
+ */
 const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 };
 
-/*
-This function generates a random string.
-The only parameter is the length of the string to generate.
-*/
+
+/**
+ * This function generates a random string of characters [A-Za-z0-9]
+ * @param {*} charactersLength The length of the string to generate.
+ * @returns A random string of the specified length.
+ */
 const generateRandomString = function(charactersLength) {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
@@ -30,16 +35,24 @@ const generateRandomString = function(charactersLength) {
 };
 
 
-
+/**
+ * Display our Main Page
+ */
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
+/**
+ * Display the New URL Page
+ */
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+/**
+ * Add a new URL to our database.
+ */
 app.post("/urls", (req, res) => {
   const longURL = req.body.longURL;
   const id = generateRandomString(6);  // Create the short URL by generating a random string.
@@ -47,14 +60,34 @@ app.post("/urls", (req, res) => {
   urlDatabase[id] = longURL;   // Add the value to our "database"
  
   // Log data to the console.
-  console.log(`Redirect URL: ${redirectURL}`);
+  //console.log(`Redirect URL: ${redirectURL}`);
+  console.log(`Added Id: ${id}, URL: ${longURL}`);
   console.log(urlDatabase);
 
-  // After completing the POST request, redirect the user to the TinyApp
+  // After completing the POST request, redirect the user to the long URL
   res.redirect(redirectURL);
-
 });
 
+/**
+ * Delete a URL from our database.
+ */
+app.post("/urls/:id/delete", (req, res) => {
+  const id = req.params.id;
+  
+  // Delete the record from our "database".
+  delete urlDatabase[id];
+
+  // Log data to the console.
+  console.log(`Deleted Id: ${id}`);
+  console.log(urlDatabase);
+
+  // After completing the POST request, redirect to the main page
+  res.redirect('/urls');
+});
+
+/**
+ * Display the info for a specific URL.
+ */
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
@@ -62,12 +95,18 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+/**
+ * Using the Tiny URL, open the long URL.
+ */
 app.get("/u/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
   res.redirect(longURL);
 });
 
+/**
+ * Our Listener.
+ */
 app.listen(PORT, () => {
   console.log(`TinyApp listening on port ${PORT}!`);
 });
