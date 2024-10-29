@@ -57,7 +57,7 @@ app.post("/urls", (req, res) => {
   const longURL = req.body.longURL;
   const id = generateRandomString(6);  // Create the short URL by generating a random string.
   const redirectURL = `/urls/${id}`;
-  urlDatabase[id] = longURL;   // Add the value to our "database"
+  urlDatabase[id] = longURL;   // Add the value to our database
  
   // Log data to the console.
   //console.log(`Redirect URL: ${redirectURL}`);
@@ -74,11 +74,29 @@ app.post("/urls", (req, res) => {
 app.post("/urls/:id/delete", (req, res) => {
   const id = req.params.id;
   
-  // Delete the record from our "database".
+  // Delete the record from our database.
   delete urlDatabase[id];
 
   // Log data to the console.
   console.log(`Deleted Id: ${id}`);
+  console.log(urlDatabase);
+
+  // After completing the POST request, redirect to the main page
+  res.redirect('/urls');
+});
+
+/**
+ * Update a URL in our database.
+ */
+app.post("/urls/:id/update", (req, res) => {
+  const id = req.params.id;
+  const longURL = req.body.longURL;
+  
+  // Update the record in our database.
+  urlDatabase[id] = longURL;
+
+  // Log data to the console.
+  console.log(`Update Id: ${id}, URL: ${longURL}`);
   console.log(urlDatabase);
 
   // After completing the POST request, redirect to the main page
