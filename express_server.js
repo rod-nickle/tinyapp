@@ -47,8 +47,8 @@ app.post("/urls", (req, res) => {
   urlDatabase[id] = longURL;   // Add the value to our "database"
  
   // Log data to the console.
-  // console.log(`Redirect URL: ${redirectURL}`);
-  // console.log(urlDatabase);
+  console.log(`Redirect URL: ${redirectURL}`);
+  console.log(urlDatabase);
 
   // After completing the POST request, redirect the user to the TinyApp
   res.redirect(redirectURL);
