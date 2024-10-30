@@ -61,9 +61,6 @@ const generateRandomString = (charactersLength) => {
  * @returns The User object if found; otherwise, NULL.
  */
 const getUserByEmail = (email) => {
-  let user = null;
-
-  // Lookup the User based on their Email
   for (const userId in users) {
     const user = users[userId];
     if (user.email === email) {
@@ -154,27 +151,50 @@ app.post("/urls/:id/update", (req, res) => {
 });
 
 /**
+ * Login Page
+ */
+app.get("/login", (req, res) => {
+  const templateVars = {
+    user: users[req.cookies.userId],
+  };
+
+  res.render("login", templateVars);
+});
+
+/**
  * Log the user into the system
  * Actually, we are just setting the cookie.
  */
 app.post("/login", (req, res) => {
+  // Get the Email and Password from the Request body.
   const email = req.body.email;
+  const password = req.body.password;
 
-  if (!email) {
-    console.log(`Email field is empty.`);
-    return res.status(400).send("Email field is empty.");
+  // Throw an error if there is no Email or Password
+  if (!email || !password) {
+    return res.status(400).send('You must provide an email and password to proceed.');
   }
-  
-  // Log data to the console.
-  console.log(`Email: ${email}`);
-  
+
   // Lookup the User based on their email.
-  const user = getUserByEmail(email);
+  let user = getUserByEmail(email);
 
+  // Error if the Email is not found.
   if (!user) {
-    return res.status(400).send(`The email entered cannot be found.`)
+    return res.status(400).send('Invalid email or password');
   }
+
+  // Error Password does not match.
+  if (user.password !== password) {
+    return res.status(400).send('Invalid email or password');
+  }
+
+  // Log data to the console.
+  console.log(`Id: ${user.id}, Email: ${user.email} Password: ${user.password}`);
+  console.log(users);
+
+  // Set the cookie
   res.cookie("userId", user.id);
+
   // After completing the POST request, redirect to the main page
   res.redirect('/urls');
 });
@@ -184,7 +204,7 @@ app.post("/login", (req, res) => {
  * Actually, we are just removing the cookie.
  */
 app.post("/logout", (req, res) => {
-  userId = req.cookies.userId;
+  const userId = req.cookies.userId;
 
   // Log data to the console.
   console.log(`Removing UserId: ${userId}`);
@@ -219,13 +239,12 @@ app.post("/register", (req, res) => {
   }
 
   // Lookup the User based on their email.
-   let user = getUserByEmail(email);
+  let user = getUserByEmail(email);
 
   // Error if the Email already exists.
   if (user) {
     return res.status(400).send('A user with that email already exists.');
   }
-
 
   // We passed all the validations. Add the user to the database.
   const id = generateRandomString(6);
