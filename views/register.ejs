@@ -16,23 +16,19 @@
   <%- include('partials/_header') %>
 
     <main style="margin: 1em;">
-      <h3>Register</h3>
+      <h3>Create Account</h3>
       <form action="/register" method="POST">
-        <div class="mb-3 row">
-          <label for="email" class="col-sm-2 col-form-label">Email</label>
-          <div class="col-sm-10">
-            <input name="email" type="email" class="form-control" placeholder="Email" style="width: 300px; margin: 1em"
-              autocomplete="off" required="true">
-          </div>
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input name="email" type="email" class="form-control" placeholder="Email" style="width: 400px"
+            autocomplete="off" required="true">
         </div>
-        <div class="mb-3 row">
-          <label for="password" class="col-sm-2 col-form-label">Password</label>
-          <div class="col-sm-10">
-            <input name="password" type="password" class="form-control" style="width: 300px; margin: 1em"
-              autocomplete="off" required="true">
-          </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input name="password" type="password" class="form-control" placeholder="Password" style="width: 400px"
+            autocomplete="off" required="true">
         </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="submit" class="btn btn-primary">Register</button>
       </form>
     </main>
 

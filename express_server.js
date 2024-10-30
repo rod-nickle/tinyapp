@@ -185,7 +185,7 @@ app.post("/login", (req, res) => {
 
   // Throw an error if there is no Email or Password
   if (!email || !password) {
-    return res.status(400).send('You must provide an email and password to proceed.');
+    return res.status(403).send('You must provide an email and password to proceed.');
   }
 
   // Lookup the User based on their email.
@@ -193,12 +193,12 @@ app.post("/login", (req, res) => {
 
   // Error if the Email is not found.
   if (!user) {
-    return res.status(400).send('Invalid email or password');
+    return res.status(403).send('Invalid email.');
   }
 
   // Error Password does not match.
   if (user.password !== password) {
-    return res.status(400).send('Invalid email or password');
+    return res.status(403).send('Invalid password.');
   }
 
   // Log data to the console.
@@ -224,7 +224,7 @@ app.post("/logout", (req, res) => {
   
   res.clearCookie("userId");
   // After completing the POST request, redirect to the main page
-  res.redirect('/urls');
+  res.redirect('/login');
 });
 
 /**
