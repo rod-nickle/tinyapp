@@ -156,6 +156,18 @@ app.post("/logout", (req, res) => {
 });
 
 /**
+ * Registration Page
+ */
+app.get("/register", (req, res) => {
+  const templateVars = {
+    username: req.cookies.username,
+  };
+
+  res.render("register",templateVars);
+});
+
+
+/**
  * Display the info for a specific URL.
  */
 app.get("/urls/:id", (req, res) => {
