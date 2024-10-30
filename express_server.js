@@ -102,9 +102,17 @@ app.get("/urls/new", (req, res) => {
  */
 app.post("/urls", (req, res) => {
   const longURL = req.body.longURL;
+
+  // Throw an error if No URL was entered.
+  if (!longURL) {
+    return res.status(400).send('You must provide a URL to proceed.');
+  }
+
   const id = generateRandomString(6);  // Create the short URL by generating a random string.
   const redirectURL = `/urls/${id}`;
-  urlDatabase[id] = longURL;   // Add the value to our database
+
+  // Add the new URL to our database
+  urlDatabase[id] = longURL;
  
   // Log data to the console.
   //console.log(`Redirect URL: ${redirectURL}`);
@@ -139,6 +147,11 @@ app.post("/urls/:id/update", (req, res) => {
   const id = req.params.id;
   const longURL = req.body.longURL;
   
+  // Throw an error if No URL was entered.
+  if (!longURL) {
+    return res.status(400).send('You must provide a URL to proceed.');
+  }
+
   // Update the record in our database.
   urlDatabase[id] = longURL;
 
