@@ -1,9 +1,12 @@
 const express = require("express");
-const app = express();
+const cookieParser = require("cookie-parser")
 const PORT = 8080; // default port 8080
 
+const app = express();
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.set("view engine", "ejs");
+
 
 /**
  * This is our database. 🙂
@@ -40,7 +43,13 @@ const generateRandomString = function(charactersLength) {
  * Display our Main Page
  */
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  // // Display Cookies
+  // console.log('Cookies: ', req.cookies);
+
+  const templateVars = {
+    urls: urlDatabase,
+    username: req.cookies.username,
+   };
   res.render("urls_index", templateVars);
 });
 
@@ -49,7 +58,10 @@ app.get("/urls", (req, res) => {
  * Display the New URL Page
  */
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {
+    username: req.cookies.username,
+   };
+  res.render("urls_new", templateVars);
 });
 
 /**
@@ -110,6 +122,7 @@ app.post("/urls/:id/update", (req, res) => {
  * Actually, we are just setting the cookie.
  */
 app.post("/login", (req, res) => {
+  // TODO: Handle empty usernames.
   username = req.body.username;
   
   // Log data to the console.
@@ -126,7 +139,11 @@ app.post("/login", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
-  const templateVars = { id: id, longURL: longURL };
+  const templateVars = {
+    id: id, 
+    longURL: longURL,
+    username: req.cookies.username,
+   };
   res.render("urls_show", templateVars);
 });
 
