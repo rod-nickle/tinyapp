@@ -114,7 +114,6 @@ app.post("/login", (req, res) => {
   
   // Log data to the console.
   console.log(`Username: ${username}`);
-  res.cookie("username", );
   
   res.cookie("username", username);
   // After completing the POST request, redirect to the main page
