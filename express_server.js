@@ -1,5 +1,5 @@
 const express = require("express");
-const cookieParser = require("cookie-parser")
+const cookieParser = require("cookie-parser");
 const PORT = 8080; // default port 8080
 
 const app = express();
@@ -49,7 +49,7 @@ app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
     username: req.cookies.username,
-   };
+  };
   res.render("urls_index", templateVars);
 });
 
@@ -60,7 +60,7 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   const templateVars = {
     username: req.cookies.username,
-   };
+  };
   res.render("urls_new", templateVars);
 });
 
@@ -122,13 +122,30 @@ app.post("/urls/:id/update", (req, res) => {
  * Actually, we are just setting the cookie.
  */
 app.post("/login", (req, res) => {
-  // TODO: Handle empty usernames.
   username = req.body.username;
+
+  if (!username) {
+    console.log(`Username field is empty.`);
+    return res.status(418).send("Username field is empty.");
+  }
   
   // Log data to the console.
   console.log(`Username: ${username}`);
   
   res.cookie("username", username);
+  // After completing the POST request, redirect to the main page
+  res.redirect('/urls');
+});
+
+/**
+ * Log the user out of the system
+ * Actually, we are just removing the cookie.
+ */
+app.post("/logout", (req, res) => {
+  // Log data to the console.
+  console.log(`Removing Username: ${username}`);
+  
+  res.clearCookie("username");
   // After completing the POST request, redirect to the main page
   res.redirect('/urls');
 });
@@ -140,10 +157,10 @@ app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
   const templateVars = {
-    id: id, 
+    id: id,
     longURL: longURL,
     username: req.cookies.username,
-   };
+  };
   res.render("urls_show", templateVars);
 });
 
