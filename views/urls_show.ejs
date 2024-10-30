@@ -7,7 +7,7 @@
     integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous" />
   <title>URL - TinyApp</title>
   <style>
-    .form-inline {
+    .new-url {
       background-color: whitesmoke;
       display: flex;
       justify-content: center;
@@ -31,6 +31,7 @@
       </div>
       <div>
         <h3 class="card-title">Edit</h3>
+        <div class="new-url">
         <form class="form-inline" action="/urls/<%= id %>/update" method="POST">
           <div class="form-group mb-3">
             <label for="longURL">New URL:</label>
@@ -39,6 +40,7 @@
             <button type="submit" class="btn btn-primary">Submit</button>
           </div>
         </form>
+      </div>
       </div>
     </div>
 

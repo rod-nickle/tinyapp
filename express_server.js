@@ -13,6 +13,7 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com",
 };
 
+let username;
 
 /**
  * This function generates a random string of characters [A-Za-z0-9]
@@ -42,6 +43,7 @@ app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
+
 
 /**
  * Display the New URL Page
@@ -99,6 +101,22 @@ app.post("/urls/:id/update", (req, res) => {
   console.log(`Update Id: ${id}, URL: ${longURL}`);
   console.log(urlDatabase);
 
+  // After completing the POST request, redirect to the main page
+  res.redirect('/urls');
+});
+
+/**
+ * Log the user into the system
+ * Actually, we are just setting the cookie.
+ */
+app.post("/login", (req, res) => {
+  username = req.body.username;
+  
+  // Log data to the console.
+  console.log(`Username: ${username}`);
+  res.cookie("username", );
+  
+  res.cookie("username", username);
   // After completing the POST request, redirect to the main page
   res.redirect('/urls');
 });
