@@ -1,11 +1,16 @@
 const express = require("express");
+const morgan = require('morgan');
 const cookieParser = require("cookie-parser");
 const PORT = 8080; // default port 8080
-
 const app = express();
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+
+// Configurations
 app.set("view engine", "ejs");
+
+// Middleware
+app.use(express.urlencoded({ extended: true }));
+app.use(morgan('dev'));
+app.use(cookieParser());
 
 
 /**
