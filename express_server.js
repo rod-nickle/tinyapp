@@ -21,14 +21,26 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com",
 };
 
-let username;
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "a@a.com",
+    password: "1234",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "b@b.com",
+    password: "1234",
+  },
+};
+
 
 /**
  * This function generates a random string of characters [A-Za-z0-9]
  * @param {*} charactersLength The length of the string to generate.
  * @returns A random string of the specified length.
  */
-const generateRandomString = function(charactersLength) {
+const generateRandomString = (charactersLength) => {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
   
@@ -43,17 +55,36 @@ const generateRandomString = function(charactersLength) {
   return result;
 };
 
+/**
+ * This function returns a user object from the Users database.
+ * @param {*} email The email to find in the Users database.
+ * @returns The User object if found; otherwise, NULL.
+ */
+const getUserByEmail = (email) => {
+  let user = null;
+
+  // Lookup the User based on their Email
+  for (const userId in users) {
+    const user = users[userId];
+    if (user.email === email) {
+      // We found our user!
+      return user;
+    }
+  }
+  return null;
+};
+
 
 /**
  * Display our Main Page
  */
 app.get("/urls", (req, res) => {
-  // // Display Cookies
-  // console.log('Cookies: ', req.cookies);
+  // Display Cookies
+  console.log('Cookies: ', req.cookies);
 
   const templateVars = {
     urls: urlDatabase,
-    username: req.cookies.username,
+    user: users[req.cookies.userId],
   };
   res.render("urls_index", templateVars);
 });
@@ -64,7 +95,7 @@ app.get("/urls", (req, res) => {
  */
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    username: req.cookies.username,
+    user: users[req.cookies.userId],
   };
   res.render("urls_new", templateVars);
 });
@@ -127,17 +158,23 @@ app.post("/urls/:id/update", (req, res) => {
  * Actually, we are just setting the cookie.
  */
 app.post("/login", (req, res) => {
-  username = req.body.username;
+  const email = req.body.email;
 
-  if (!username) {
-    console.log(`Username field is empty.`);
-    return res.status(418).send("Username field is empty.");
+  if (!email) {
+    console.log(`Email field is empty.`);
+    return res.status(400).send("Email field is empty.");
   }
   
   // Log data to the console.
-  console.log(`Username: ${username}`);
+  console.log(`Email: ${email}`);
   
-  res.cookie("username", username);
+  // Lookup the User based on their email.
+  const user = getUserByEmail(email);
+
+  if (!user) {
+    return res.status(400).send(`The email entered cannot be found.`)
+  }
+  res.cookie("userId", user.id);
   // After completing the POST request, redirect to the main page
   res.redirect('/urls');
 });
@@ -147,10 +184,12 @@ app.post("/login", (req, res) => {
  * Actually, we are just removing the cookie.
  */
 app.post("/logout", (req, res) => {
+  userId = req.cookies.userId;
+
   // Log data to the console.
-  console.log(`Removing Username: ${username}`);
+  console.log(`Removing UserId: ${userId}`);
   
-  res.clearCookie("username");
+  res.clearCookie("userId");
   // After completing the POST request, redirect to the main page
   res.redirect('/urls');
 });
@@ -160,10 +199,54 @@ app.post("/logout", (req, res) => {
  */
 app.get("/register", (req, res) => {
   const templateVars = {
-    username: req.cookies.username,
+    user: users[req.cookies.userId],
   };
 
   res.render("register",templateVars);
+});
+
+/**
+ * Register the user
+ */
+app.post("/register", (req, res) => {
+  // Get the Email and Password from the Request body.
+  const email = req.body.email;
+  const password = req.body.password;
+
+  // Throw an error if there is no Email or Password
+  if (!email || !password) {
+    return res.status(400).send('You must provide an email and password to proceed.');
+  }
+
+  // Lookup the User based on their email.
+   let user = getUserByEmail(email);
+
+  // Error if the Email already exists.
+  if (user) {
+    return res.status(400).send('A user with that email already exists.');
+  }
+
+
+  // We passed all the validations. Add the user to the database.
+  const id = generateRandomString(6);
+  user = {
+    id,
+    email,
+    password,
+  };
+
+  // Add the new user to the Users object
+  users[id] = user;
+
+  // Log data to the console.
+  console.log(`New Id: ${id}, Email: ${email} Password: ${password}`);
+  console.log(users);
+
+  // Set the cookie
+  res.cookie("userId", id);
+
+  // After completing the POST request, redirect to the main page
+  res.redirect('/urls');
 });
 
 
@@ -176,8 +259,9 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: id,
     longURL: longURL,
-    username: req.cookies.username,
+    user: users[req.cookies.userId],
   };
+
   res.render("urls_show", templateVars);
 });
 
