@@ -302,7 +302,7 @@ app.post("/register", (req, res) => {
 
   // Error if the Email already exists.
   if (user) {
-    return res.status(409).send('A user with that email already exists.');
+    return res.status(400).send('A user with that email already exists.');
   }
 
   // Hash the password.  This is what will be saved.
