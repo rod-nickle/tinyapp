@@ -17,18 +17,28 @@ app.use(cookieParser());
  * This is our database. 🙂
  */
 const urlDatabase = {
-  b2xVn2: "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
+  "1DbaZv": {
+    longURL: "https://www.tsn.ca",
+    userId: "lSHoYY",
+  },
+  VkXQck: {
+    longURL: "https://www.google.ca",
+    userId: "lSHoYY",
+  },
+  eMe7jn: {
+    longURL: "https://www.lighthouselabs.ca",
+    userId: "Hh65Sm",
+  },
 };
 
 const users = {
-  userRandomID: {
-    id: "userRandomID",
+  lSHoYY: {
+    id: "lSHoYY",
     email: "a@a.com",
     password: "1234",
   },
-  user2RandomID: {
-    id: "user2RandomID",
+  Hh65Sm: {
+    id: "Hh65Sm",
     email: "b@b.com",
     password: "1234",
   },
@@ -73,15 +83,42 @@ const getUserByEmail = (email) => {
 
 
 /**
+ * This function returns a new object of URLs filtered by the userId
+ * of the owner
+ * @param {*} userId The Id of the currently logged in User
+ * @returns A object of URLs for which he owns.
+ */
+const urlsForUser = (userId) => {
+  const urlObjectsForUser = {};
+
+  // Loop throug all URLs in our database.
+  // If the userId matches, add the object to our new object of URLS.
+  for (const databaseId in urlDatabase) {
+    if (urlDatabase[databaseId].userId === userId) {
+      urlObjectsForUser[databaseId] = urlDatabase[databaseId];
+    }
+  }
+
+  return urlObjectsForUser;
+};
+
+/**
  * Display our Main Page
  */
 app.get("/urls", (req, res) => {
-  // Display Cookies
-  console.log('Cookies: ', req.cookies);
+  const userId = req.cookies.userId;
+
+  // If the user is logged in, redirect them the Login Page
+  if (!userId) {
+    return res.redirect('/login');
+  }
+
+  // Get the list of URLs owned by the current user.
+   const urlObjectsForUser = urlsForUser(userId);
 
   const templateVars = {
-    urls: urlDatabase,
-    user: users[req.cookies.userId],
+    urls: urlObjectsForUser,
+    user: users[userId],
   };
   res.render("urls_index", templateVars);
 });
@@ -91,7 +128,7 @@ app.get("/urls", (req, res) => {
  * Display the New URL Page
  */
 app.get("/urls/new", (req, res) => {
-  const userId = req.cookies.userId
+  const userId = req.cookies.userId;
 
   // If the user is logged in, redirect them the Login Page
   if (!userId) {
@@ -108,14 +145,13 @@ app.get("/urls/new", (req, res) => {
  * Add a new URL to our database.
  */
 app.post("/urls", (req, res) => {
-  const userId = req.cookies.userId
+  const userId = req.cookies.userId;
+  const longURL = req.body.longURL;
 
   // If the user is NOT logged in, throw an error message
   if (!userId) {
     return res.status(401).send('You must login to proceed.');
   }
-
-  const longURL = req.body.longURL;
 
   // Throw an error if No URL was entered.
   if (!longURL) {
@@ -126,11 +162,9 @@ app.post("/urls", (req, res) => {
   const redirectURL = `/urls/${id}`;
 
   // Add the new URL to our database
-  urlDatabase[id] = longURL;
+  urlDatabase[id] = {longURL, userId};
  
   // Log data to the console.
-  //console.log(`Redirect URL: ${redirectURL}`);
-  console.log(`Added Id: ${id}, URL: ${longURL}`);
   console.log(urlDatabase);
 
   // After completing the POST request, redirect the user to the long URL
@@ -142,7 +176,24 @@ app.post("/urls", (req, res) => {
  */
 app.post("/urls/:id/delete", (req, res) => {
   const id = req.params.id;
+  const userId = req.cookies.userId;
   
+  // Throw an error if Id is invalid.
+  if (!id || !urlDatabase[id]) {
+    return res.status(400).send('You must provide a valid Tiny URL.');
+  }
+
+  // If the user is NOT logged in, throw an error message
+  if (!userId) {
+    return res.status(401).send('You must login to proceed.');
+  }
+
+  // If the user does not own the specific URL, then throw an error.
+  const urlObjectsForUser = urlsForUser(userId);
+  if (!urlObjectsForUser[id]) {
+    return res.status(403).send('You do not have authorization.');
+  }
+
   // Delete the record from our database.
   delete urlDatabase[id];
 
@@ -160,14 +211,31 @@ app.post("/urls/:id/delete", (req, res) => {
 app.post("/urls/:id/update", (req, res) => {
   const id = req.params.id;
   const longURL = req.body.longURL;
+  const userId = req.cookies.userId;
   
+  // Throw an error if Id is invalid.
+  if (!id || !urlDatabase[id]) {
+    return res.status(400).send('You must provide a valid Tiny URL.');
+  }
+
+  // If the user is NOT logged in, throw an error message
+  if (!userId) {
+    return res.status(401).send('You must login to proceed.');
+  }
+
+  // If the user does not own the specific URL, then throw an error.
+  const urlObjectsForUser = urlsForUser(userId);
+  if (!urlObjectsForUser[id]) {
+    return res.status(403).send('You do not have authorization.');
+  }
+
   // Throw an error if No URL was entered.
   if (!longURL) {
     return res.status(400).send('You must provide a URL to proceed.');
   }
 
   // Update the record in our database.
-  urlDatabase[id] = longURL;
+  urlDatabase[id].longURL = longURL;
 
   // Log data to the console.
   console.log(`Update Id: ${id}, URL: ${longURL}`);
@@ -181,7 +249,7 @@ app.post("/urls/:id/update", (req, res) => {
  * Login Page
  */
 app.get("/login", (req, res) => {
-  const userId = req.cookies.userId 
+  const userId = req.cookies.userId;
 
   // If the user is logged in, redirect them the Main Page
   if (userId) {
@@ -223,7 +291,6 @@ app.post("/login", (req, res) => {
   }
 
   // Log data to the console.
-  console.log(`Id: ${user.id}, Email: ${user.email} Password: ${user.password}`);
   console.log(users);
 
   // Set the cookie
@@ -238,12 +305,9 @@ app.post("/login", (req, res) => {
  * Actually, we are just removing the cookie.
  */
 app.post("/logout", (req, res) => {
-  const userId = req.cookies.userId;
-
-  // Log data to the console.
-  console.log(`Removing UserId: ${userId}`);
-  
+  // Clear the cookie.
   res.clearCookie("userId");
+
   // After completing the POST request, redirect to the main page
   res.redirect('/login');
 });
@@ -252,7 +316,7 @@ app.post("/logout", (req, res) => {
  * Registration Page
  */
 app.get("/register", (req, res) => {
-  const userId = req.cookies.userId
+  const userId = req.cookies.userId;
 
   // If the user is logged in, redirect them the Main Page
   if (userId) {
@@ -299,7 +363,6 @@ app.post("/register", (req, res) => {
   users[id] = user;
 
   // Log data to the console.
-  console.log(`New Id: ${id}, Email: ${email} Password: ${password}`);
   console.log(users);
 
   // Set the cookie
@@ -315,16 +378,28 @@ app.post("/register", (req, res) => {
  */
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
-  const longURL = urlDatabase[id];
+  const longURL = urlDatabase[id].longURL;
+  const userId = req.cookies.userId;
 
   // Throw an error if Id is invalid.
   if (!id || !urlDatabase[id]) {
     return res.status(400).send('You must provide a valid Tiny URL.');
   }
 
+  // If the user is not logged in, redirect them the Login Page
+  if (!userId) {
+    return res.redirect('/login');
+  }
+
+  // If the user does not own the specific URL, then throw an error.
+  const urlObjectsForUser = urlsForUser(userId);
+  if (!urlObjectsForUser[id]) {
+    return res.status(403).send('You do not have authorization.');
+  }
+
   const templateVars = {
-    id: id,
-    longURL: longURL,
+    id,
+    longURL,
     user: users[req.cookies.userId],
   };
 
@@ -336,13 +411,13 @@ app.get("/urls/:id", (req, res) => {
  */
 app.get("/u/:id", (req, res) => {
   const id = req.params.id;
-  const longURL = urlDatabase[id];
+  const longURL = urlDatabase[id].longURL;
 
   // Throw an error if Id is invalid.
   if (!id || !urlDatabase[id]) {
     return res.status(400).send('You must provide a valid Tiny URL.');
   }
-  
+
   res.redirect(longURL);
 });
 
