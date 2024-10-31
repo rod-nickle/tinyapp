@@ -1,18 +1,18 @@
-// const generateRandomString = function(charactersLength) {
-//   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-//   let result = '';
+const generateRandomString = function(charactersLength) {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
   
-//   for (let i = 0; i < charactersLength; i++) {
-//     // Generate a Random Number within the length of available characters.
-//     let randomNumber = Math.floor(Math.random() * characters.length);
+  for (let i = 0; i < charactersLength; i++) {
+    // Generate a Random Number within the length of available characters.
+    let randomNumber = Math.floor(Math.random() * characters.length);
 
-//     // Grab the character at that position and add it to our result.
-//     result += characters.charAt(randomNumber);
-//   }
-//   return result;
-// };
+    // Grab the character at that position and add it to our result.
+    result += characters.charAt(randomNumber);
+  }
+  return result;
+};
 
-// console.log(generateRandomString(6));
+console.log(generateRandomString(20));
 // console.log(generateRandomString(6));
 // console.log(generateRandomString(6));
 // console.log(generateRandomString(6));
@@ -62,11 +62,12 @@
 
 // console.log('This is ourn new object:', urlsForUser("Hh65Sm"));
 
-const bcrypt = require("bcryptjs");
-const password = "1234"; // found in the req.body object
-const hashedPassword = bcrypt.hashSync(password, 10);
+// const bcrypt = require("bcryptjs");
+// const salt = bcrypt.genSaltSync(10);
+// const password = "1234"; // found in the req.body object
+// const hashedPassword = bcrypt.hashSync(password, salt);
 
-console.log(password, hashedPassword);
+// console.log(salt, password, hashedPassword);
 
-console.log("Do the passwords match? ", bcrypt.compareSync("12344", hashedPassword));
+// console.log("Do the passwords match? ", bcrypt.compareSync("12344", hashedPassword));
 

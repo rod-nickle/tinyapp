@@ -1,7 +1,8 @@
 const express = require("express");
-const morgan = require('morgan');
-const cookieSession = require('cookie-session');
+const morgan = require("morgan");
+const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
+const {generateRandomString, getUserByEmail, urlsForUser} = require("./helpers");
 const PORT = 8080; // default port 8080
 const app = express();
 
@@ -12,7 +13,8 @@ app.set("view engine", "ejs");
 app.use(express.urlencoded({extended: true}));
 app.use(morgan('dev'));
 app.use(cookieSession({
-  keys: ["key1", "key2"],
+  keys: ["54RFZBOWXbv2dp979wqM"],
+  maxAge: 24 * 60 * 60 * 1000, // 24 hours
 }));
 
 
@@ -38,72 +40,15 @@ const users = {
   lSHoYY: {
     id: "lSHoYY",
     email: "a@a.com",
-    password: "$2a$10$CkQR388hcaIbilgs6l/mVu0kC4Bb/xPeVDAtvOxermFYVLTpq3kj6",
+    password: bcrypt.hashSync("1234", 10),
   },
   Hh65Sm: {
     id: "Hh65Sm",
     email: "b@b.com",
-    password: "$2a$10$/2fcjS6QfRq6qBkuqgvJ4uU0Jio11JakWp1CXRlZOZnnX8bv2EWU2",
+    password: bcrypt.hashSync("1234", 10),
   },
 };
 
-
-/**
- * This function generates a random string of characters [A-Za-z0-9]
- * @param {*} charactersLength The length of the string to generate.
- * @returns A random string of the specified length.
- */
-const generateRandomString = (charactersLength) => {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  
-  // Build the result i.e. the random string by generating a random character.
-  for (let i = 0; i < charactersLength; i++) {
-    // Generate a random number within the length of available characters.
-    let randomNumber = Math.floor(Math.random() * characters.length);
-
-    // Grab the character at that position and add it to our result.
-    result += characters.charAt(randomNumber);
-  }
-  return result;
-};
-
-/**
- * This function returns a user object from the Users database.
- * @param {*} email The email to find in the Users database.
- * @returns The User object if found; otherwise, NULL.
- */
-const getUserByEmail = (email) => {
-  for (const userId in users) {
-    const user = users[userId];
-    if (user.email === email) {
-      // We found our user!
-      return user;
-    }
-  }
-  return null;
-};
-
-
-/**
- * This function returns a new object of URLs filtered by the userId
- * of the owner
- * @param {*} userId The Id of the currently logged in User
- * @returns A object of URLs for which he owns.
- */
-const urlsForUser = (userId) => {
-  const urlObjectsForUser = {};
-
-  // Loop throug all URLs in our database.
-  // If the userId matches, add the object to our new object of URLS.
-  for (const databaseId in urlDatabase) {
-    if (urlDatabase[databaseId].userId === userId) {
-      urlObjectsForUser[databaseId] = urlDatabase[databaseId];
-    }
-  }
-
-  return urlObjectsForUser;
-};
 
 /**
  * Display our Main Page
@@ -117,7 +62,7 @@ app.get("/urls", (req, res) => {
   }
 
   // Get the list of URLs owned by the current user.
-  const urlObjectsForUser = urlsForUser(userId);
+  const urlObjectsForUser = urlsForUser(userId, urlDatabase);
 
   const templateVars = {
     urls: urlObjectsForUser,
@@ -192,7 +137,7 @@ app.post("/urls/:id/delete", (req, res) => {
   }
 
   // If the user does not own the specific URL, then throw an error.
-  const urlObjectsForUser = urlsForUser(userId);
+  const urlObjectsForUser = urlsForUser(userId, urlDatabase);
   if (!urlObjectsForUser[id]) {
     return res.status(403).send('You do not have authorization.');
   }
@@ -227,7 +172,7 @@ app.post("/urls/:id/update", (req, res) => {
   }
 
   // If the user does not own the specific URL, then throw an error.
-  const urlObjectsForUser = urlsForUser(userId);
+  const urlObjectsForUser = urlsForUser(userId, urlDatabase);
   if (!urlObjectsForUser[id]) {
     return res.status(403).send('You do not have authorization.');
   }
@@ -281,7 +226,7 @@ app.post("/login", (req, res) => {
   }
 
   // Lookup the User based on their email.
-  let user = getUserByEmail(email);
+  let user = getUserByEmail(email, users);
 
   // Error if the Email is not found.
   if (!user) {
@@ -353,7 +298,7 @@ app.post("/register", (req, res) => {
   }
 
   // Lookup the User based on their email.
-  let user = getUserByEmail(email);
+  let user = getUserByEmail(email, users);
 
   // Error if the Email already exists.
   if (user) {
@@ -377,7 +322,7 @@ app.post("/register", (req, res) => {
   console.log(users);
 
   // Set the cookie
-  res.session.userId = id;
+  req.session.userId = id;
 
   // After completing the POST request, redirect to the main page
   res.redirect('/urls');
@@ -402,7 +347,7 @@ app.get("/urls/:id", (req, res) => {
   }
 
   // If the user does not own the specific URL, then throw an error.
-  const urlObjectsForUser = urlsForUser(userId);
+  const urlObjectsForUser = urlsForUser(userId, urlDatabase);
   if (!urlObjectsForUser[id]) {
     return res.status(403).send('You do not have authorization.');
   }
