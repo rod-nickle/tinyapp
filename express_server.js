@@ -1,6 +1,6 @@
 const express = require("express");
 const morgan = require('morgan');
-const cookieParser = require("cookie-parser");
+const cookieSession = require('cookie-session');
 const bcrypt = require("bcryptjs");
 const PORT = 8080; // default port 8080
 const app = express();
@@ -9,9 +9,11 @@ const app = express();
 app.set("view engine", "ejs");
 
 // Middleware
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({extended: true}));
 app.use(morgan('dev'));
-app.use(cookieParser());
+app.use(cookieSession({
+  keys: ["key1", "key2"],
+}));
 
 
 /**
@@ -107,7 +109,7 @@ const urlsForUser = (userId) => {
  * Display our Main Page
  */
 app.get("/urls", (req, res) => {
-  const userId = req.cookies.userId;
+  const userId = req.session.userId;
 
   // If the user is logged in, redirect them the Login Page
   if (!userId) {
@@ -129,7 +131,7 @@ app.get("/urls", (req, res) => {
  * Display the New URL Page
  */
 app.get("/urls/new", (req, res) => {
-  const userId = req.cookies.userId;
+  const userId = req.session.userId;
 
   // If the user is logged in, redirect them the Login Page
   if (!userId) {
@@ -146,7 +148,7 @@ app.get("/urls/new", (req, res) => {
  * Add a new URL to our database.
  */
 app.post("/urls", (req, res) => {
-  const userId = req.cookies.userId;
+  const userId = req.session.userId;
   const longURL = req.body.longURL;
 
   // If the user is NOT logged in, throw an error message
@@ -177,7 +179,7 @@ app.post("/urls", (req, res) => {
  */
 app.post("/urls/:id/delete", (req, res) => {
   const id = req.params.id;
-  const userId = req.cookies.userId;
+  const userId = req.session.userId;
   
   // Throw an error if Id is invalid.
   if (!id || !urlDatabase[id]) {
@@ -212,7 +214,7 @@ app.post("/urls/:id/delete", (req, res) => {
 app.post("/urls/:id/update", (req, res) => {
   const id = req.params.id;
   const longURL = req.body.longURL;
-  const userId = req.cookies.userId;
+  const userId = req.session.userId;
   
   // Throw an error if Id is invalid.
   if (!id || !urlDatabase[id]) {
@@ -250,7 +252,7 @@ app.post("/urls/:id/update", (req, res) => {
  * Login Page
  */
 app.get("/login", (req, res) => {
-  const userId = req.cookies.userId;
+  const userId = req.session.userId;
 
   // If the user is logged in, redirect them the Main Page
   if (userId) {
@@ -301,7 +303,7 @@ app.post("/login", (req, res) => {
   console.log(users);
 
   // Set the cookie
-  res.cookie("userId", user.id);
+  req.session.userId = user.id;
 
   // After completing the POST request, redirect to the main page
   res.redirect('/urls');
@@ -313,7 +315,7 @@ app.post("/login", (req, res) => {
  */
 app.post("/logout", (req, res) => {
   // Clear the cookie.
-  res.clearCookie("userId");
+  req.session = null;
 
   // After completing the POST request, redirect to the main page
   res.redirect('/login');
@@ -323,7 +325,7 @@ app.post("/logout", (req, res) => {
  * Registration Page
  */
 app.get("/register", (req, res) => {
-  const userId = req.cookies.userId;
+  const userId = req.session.userId;
 
   // If the user is logged in, redirect them the Main Page
   if (userId) {
@@ -375,7 +377,7 @@ app.post("/register", (req, res) => {
   console.log(users);
 
   // Set the cookie
-  res.cookie("userId", id);
+  res.session.userId = id;
 
   // After completing the POST request, redirect to the main page
   res.redirect('/urls');
@@ -387,7 +389,7 @@ app.post("/register", (req, res) => {
  */
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
-  const userId = req.cookies.userId;
+  const userId = req.session.userId;
 
   // Throw an error if Id is invalid.
   if (!id || !urlDatabase[id]) {
@@ -409,7 +411,7 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id,
     longURL,
-    user: users[req.cookies.userId],
+    user: users[req.session.userId],
   };
 
   res.render("urls_show", templateVars);
