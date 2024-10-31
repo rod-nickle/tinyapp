@@ -1,6 +1,7 @@
 const express = require("express");
 const morgan = require('morgan');
 const cookieParser = require("cookie-parser");
+const bcrypt = require("bcryptjs");
 const PORT = 8080; // default port 8080
 const app = express();
 
@@ -35,12 +36,12 @@ const users = {
   lSHoYY: {
     id: "lSHoYY",
     email: "a@a.com",
-    password: "1234",
+    password: "$2a$10$CkQR388hcaIbilgs6l/mVu0kC4Bb/xPeVDAtvOxermFYVLTpq3kj6",
   },
   Hh65Sm: {
     id: "Hh65Sm",
     email: "b@b.com",
-    password: "1234",
+    password: "$2a$10$/2fcjS6QfRq6qBkuqgvJ4uU0Jio11JakWp1CXRlZOZnnX8bv2EWU2",
   },
 };
 
@@ -114,7 +115,7 @@ app.get("/urls", (req, res) => {
   }
 
   // Get the list of URLs owned by the current user.
-   const urlObjectsForUser = urlsForUser(userId);
+  const urlObjectsForUser = urlsForUser(userId);
 
   const templateVars = {
     urls: urlObjectsForUser,
@@ -274,7 +275,7 @@ app.post("/login", (req, res) => {
 
   // Throw an error if there is no Email or Password
   if (!email || !password) {
-    return res.status(403).send('You must provide an email and password to proceed.');
+    return res.status(400).send('You must provide an email and password to proceed.');
   }
 
   // Lookup the User based on their email.
@@ -282,12 +283,18 @@ app.post("/login", (req, res) => {
 
   // Error if the Email is not found.
   if (!user) {
-    return res.status(403).send('Invalid email.');
+    return res.status(401).send('Invalid email.');
   }
 
-  // Error Password does not match.
-  if (user.password !== password) {
-    return res.status(403).send('Invalid password.');
+  // Password stored in the database is hashed.
+  const hashedPassword = user.password;
+
+  // Does the password that is entered match the hashed password in our database.
+  const isPasswordMatch = bcrypt.compareSync(password, hashedPassword);
+
+  // Error if the Password does not match.
+  if (!isPasswordMatch) {
+    return res.status(401).send('Invalid password.');
   }
 
   // Log data to the console.
@@ -351,12 +358,14 @@ app.post("/register", (req, res) => {
     return res.status(409).send('A user with that email already exists.');
   }
 
+  // Hash the password.  This is what will be saved.
+  const hashedPassword = bcrypt.hashSync(password, 10);
   // We passed all the validations. Add the user to the database.
   const id = generateRandomString(6);
   user = {
     id,
     email,
-    password,
+    password: hashedPassword,
   };
 
   // Add the new user to the Users object
