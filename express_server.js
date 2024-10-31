@@ -91,8 +91,15 @@ app.get("/urls", (req, res) => {
  * Display the New URL Page
  */
 app.get("/urls/new", (req, res) => {
+  const userId = req.cookies.userId
+
+  // If the user is logged in, redirect them the Login Page
+  if (!userId) {
+    return res.redirect('/login');
+  }
+
   const templateVars = {
-    user: users[req.cookies.userId],
+    user: users[userId],
   };
   res.render("urls_new", templateVars);
 });
@@ -101,6 +108,13 @@ app.get("/urls/new", (req, res) => {
  * Add a new URL to our database.
  */
 app.post("/urls", (req, res) => {
+  const userId = req.cookies.userId
+
+  // If the user is NOT logged in, throw an error message
+  if (!userId) {
+    return res.status(401).send('You must login to proceed.');
+  }
+
   const longURL = req.body.longURL;
 
   // Throw an error if No URL was entered.
@@ -167,8 +181,15 @@ app.post("/urls/:id/update", (req, res) => {
  * Login Page
  */
 app.get("/login", (req, res) => {
+  const userId = req.cookies.userId 
+
+  // If the user is logged in, redirect them the Main Page
+  if (userId) {
+    return res.redirect('/urls');
+  }
+
   const templateVars = {
-    user: users[req.cookies.userId],
+    user: users[userId],
   };
 
   res.render("login", templateVars);
@@ -231,8 +252,15 @@ app.post("/logout", (req, res) => {
  * Registration Page
  */
 app.get("/register", (req, res) => {
+  const userId = req.cookies.userId
+
+  // If the user is logged in, redirect them the Main Page
+  if (userId) {
+    return res.redirect('/urls');
+  }
+
   const templateVars = {
-    user: users[req.cookies.userId],
+    user: users[userId],
   };
 
   res.render("register",templateVars);
@@ -288,6 +316,12 @@ app.post("/register", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
+
+  // Throw an error if Id is invalid.
+  if (!id || !urlDatabase[id]) {
+    return res.status(400).send('You must provide a valid Tiny URL.');
+  }
+
   const templateVars = {
     id: id,
     longURL: longURL,
@@ -303,6 +337,12 @@ app.get("/urls/:id", (req, res) => {
 app.get("/u/:id", (req, res) => {
   const id = req.params.id;
   const longURL = urlDatabase[id];
+
+  // Throw an error if Id is invalid.
+  if (!id || !urlDatabase[id]) {
+    return res.status(400).send('You must provide a valid Tiny URL.');
+  }
+  
   res.redirect(longURL);
 });
 
