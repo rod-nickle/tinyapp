@@ -56,7 +56,7 @@ const users = {
 app.get("/urls", (req, res) => {
   const userId = req.session.userId;
 
-  // If the user is logged in, redirect them the Login Page
+  // If the user is logged in, redirect them to the Login Page
   if (!userId) {
     return res.redirect('/login');
   }
@@ -78,7 +78,7 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   const userId = req.session.userId;
 
-  // If the user is logged in, redirect them the Login Page
+  // If the user is logged in, redirect them to the Login Page
   if (!userId) {
     return res.redirect('/login');
   }
@@ -96,7 +96,7 @@ app.post("/urls", (req, res) => {
   const userId = req.session.userId;
   const longURL = req.body.longURL;
 
-  // If the user is NOT logged in, throw an error message
+  // Throw an error message if the user is NOT logged in.
   if (!userId) {
     return res.status(401).send('You must login to proceed.');
   }
@@ -106,7 +106,8 @@ app.post("/urls", (req, res) => {
     return res.status(400).send('You must provide a URL to proceed.');
   }
 
-  const id = generateRandomString(6);  // Create the short URL by generating a random string.
+  // Create the short URL by generating a random string.
+  const id = generateRandomString(6);
   const redirectURL = `/urls/${id}`;
 
   // Add the new URL to our database
@@ -131,12 +132,12 @@ app.post("/urls/:id/delete", (req, res) => {
     return res.status(400).send('You must provide a valid Tiny URL.');
   }
 
-  // If the user is NOT logged in, throw an error message
+  // Throw an error if the user is NOT logged in.
   if (!userId) {
     return res.status(401).send('You must login to proceed.');
   }
 
-  // If the user does not own the specific URL, then throw an error.
+  // Throw an error if the user does not own the specific URL.
   const urlObjectsForUser = urlsForUser(userId, urlDatabase);
   if (!urlObjectsForUser[id]) {
     return res.status(403).send('You do not have authorization.');
@@ -166,12 +167,12 @@ app.post("/urls/:id/update", (req, res) => {
     return res.status(400).send('You must provide a valid Tiny URL.');
   }
 
-  // If the user is NOT logged in, throw an error message
+  // Throw an error if the user is NOT logged in.
   if (!userId) {
     return res.status(401).send('You must login to proceed.');
   }
 
-  // If the user does not own the specific URL, then throw an error.
+  // Throw an error if the user does not own the specific URL.
   const urlObjectsForUser = urlsForUser(userId, urlDatabase);
   if (!urlObjectsForUser[id]) {
     return res.status(403).send('You do not have authorization.');
@@ -199,7 +200,7 @@ app.post("/urls/:id/update", (req, res) => {
 app.get("/login", (req, res) => {
   const userId = req.session.userId;
 
-  // If the user is logged in, redirect them the Main Page
+  // If the user is logged in, redirect them to the Main Page.
   if (userId) {
     return res.redirect('/urls');
   }
@@ -216,11 +217,10 @@ app.get("/login", (req, res) => {
  * Actually, we are just setting the cookie.
  */
 app.post("/login", (req, res) => {
-  // Get the Email and Password from the Request body.
   const email = req.body.email;
   const password = req.body.password;
 
-  // Throw an error if there is no Email or Password
+  // Throw an error if there is no Email or Password.
   if (!email || !password) {
     return res.status(400).send('You must provide an email and password to proceed.');
   }
@@ -228,18 +228,18 @@ app.post("/login", (req, res) => {
   // Lookup the User based on their email.
   let user = getUserByEmail(email, users);
 
-  // Error if the Email is not found.
+  // Throw an error if the Email is not found.
   if (!user) {
     return res.status(401).send('Invalid email.');
   }
 
-  // Password stored in the database is hashed.
+  // The password stored in the database is hashed.
   const hashedPassword = user.password;
 
-  // Does the password that is entered match the hashed password in our database.
+  // Does the password that is entered match the hashed password in our database?
   const isPasswordMatch = bcrypt.compareSync(password, hashedPassword);
 
-  // Error if the Password does not match.
+  // Throw an error if the Password does not match.
   if (!isPasswordMatch) {
     return res.status(401).send('Invalid password.');
   }
@@ -288,11 +288,10 @@ app.get("/register", (req, res) => {
  * Register the user
  */
 app.post("/register", (req, res) => {
-  // Get the Email and Password from the Request body.
   const email = req.body.email;
   const password = req.body.password;
 
-  // Throw an error if there is no Email or Password
+  // Throw an error if there is no Email or Password.
   if (!email || !password) {
     return res.status(400).send('You must provide an email and password to proceed.');
   }
@@ -300,13 +299,14 @@ app.post("/register", (req, res) => {
   // Lookup the User based on their email.
   let user = getUserByEmail(email, users);
 
-  // Error if the Email already exists.
+  // Throw an error if the Email already exists.
   if (user) {
     return res.status(400).send('A user with that email already exists.');
   }
 
   // Hash the password.  This is what will be saved.
   const hashedPassword = bcrypt.hashSync(password, 10);
+
   // We passed all the validations. Add the user to the database.
   const id = generateRandomString(6);
   user = {
@@ -324,7 +324,7 @@ app.post("/register", (req, res) => {
   // Set the cookie
   req.session.userId = id;
 
-  // After completing the POST request, redirect to the main page
+  // After completing the POST request, redirect to the main page.
   res.redirect('/urls');
 });
 
@@ -341,12 +341,12 @@ app.get("/urls/:id", (req, res) => {
     return res.status(400).send('You must provide a valid Tiny URL.');
   }
 
-  // If the user is not logged in, redirect them the Login Page
+  // If the user is not logged in, redirect them the Login Page.
   if (!userId) {
     return res.redirect('/login');
   }
 
-  // If the user does not own the specific URL, then throw an error.
+  // Throw an error if the user does not own the specific URL.
   const urlObjectsForUser = urlsForUser(userId, urlDatabase);
   if (!urlObjectsForUser[id]) {
     return res.status(403).send('You do not have authorization.');
