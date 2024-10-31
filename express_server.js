@@ -157,7 +157,7 @@ app.post("/urls/:id/delete", (req, res) => {
 /**
  * Update a URL in our database.
  */
-app.post("/urls/:id/update", (req, res) => {
+app.post("/urls/:id", (req, res) => {
   const id = req.params.id;
   const longURL = req.body.longURL;
   const userId = req.session.userId;
@@ -375,6 +375,14 @@ app.get("/u/:id", (req, res) => {
   
   const longURL = urlDatabase[id].longURL;
   res.redirect(longURL);
+});
+
+/**
+ * 
+ */
+app.get("/", (req, res) => {
+  // Redirect to our Main Page.
+  res.redirect('/urls');
 });
 
 /**
