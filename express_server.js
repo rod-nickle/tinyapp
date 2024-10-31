@@ -348,7 +348,7 @@ app.post("/register", (req, res) => {
 
   // Error if the Email already exists.
   if (user) {
-    return res.status(400).send('A user with that email already exists.');
+    return res.status(409).send('A user with that email already exists.');
   }
 
   // We passed all the validations. Add the user to the database.
@@ -378,7 +378,6 @@ app.post("/register", (req, res) => {
  */
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
-  const longURL = urlDatabase[id].longURL;
   const userId = req.cookies.userId;
 
   // Throw an error if Id is invalid.
@@ -397,6 +396,7 @@ app.get("/urls/:id", (req, res) => {
     return res.status(403).send('You do not have authorization.');
   }
 
+  const longURL = urlDatabase[id].longURL;
   const templateVars = {
     id,
     longURL,
@@ -411,13 +411,13 @@ app.get("/urls/:id", (req, res) => {
  */
 app.get("/u/:id", (req, res) => {
   const id = req.params.id;
-  const longURL = urlDatabase[id].longURL;
-
+  
   // Throw an error if Id is invalid.
   if (!id || !urlDatabase[id]) {
     return res.status(400).send('You must provide a valid Tiny URL.');
   }
-
+  
+  const longURL = urlDatabase[id].longURL;
   res.redirect(longURL);
 });
 
