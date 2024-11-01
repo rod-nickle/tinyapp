@@ -25,9 +25,9 @@ app.use(cookieSession({
 app.get("/urls", (req, res) => {
   const userId = req.session.userId;
 
-  // If the user is logged in, redirect them to the Login Page
+  // Throw an error if the user is not logged in
   if (!userId) {
-    return res.redirect('/login');
+    return res.status(401).send('You must login to proceed.');
   }
 
   // Get the list of URLs owned by the current user.
@@ -47,7 +47,7 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   const userId = req.session.userId;
 
-  // If the user is logged in, redirect them to the Login Page
+  // If the user is not logged in, redirect them to the Login Page
   if (!userId) {
     return res.redirect('/login');
   }
@@ -65,7 +65,7 @@ app.post("/urls", (req, res) => {
   const userId = req.session.userId;
   const longURL = req.body.longURL;
 
-  // Throw an error message if the user is NOT logged in.
+  // Throw an error message if the user is not logged in.
   if (!userId) {
     return res.status(401).send('You must login to proceed.');
   }
@@ -101,7 +101,7 @@ app.post("/urls/:id/delete", (req, res) => {
     return res.status(400).send('You must provide a valid Tiny URL.');
   }
 
-  // Throw an error if the user is NOT logged in.
+  // Throw an error if the user is not logged in.
   if (!userId) {
     return res.status(401).send('You must login to proceed.');
   }
@@ -136,7 +136,7 @@ app.post("/urls/:id", (req, res) => {
     return res.status(400).send('You must provide a valid Tiny URL.');
   }
 
-  // Throw an error if the user is NOT logged in.
+  // Throw an error if the user is not logged in.
   if (!userId) {
     return res.status(401).send('You must login to proceed.');
   }
@@ -310,9 +310,9 @@ app.get("/urls/:id", (req, res) => {
     return res.status(400).send('You must provide a valid Tiny URL.');
   }
 
-  // If the user is not logged in, redirect them the Login Page.
+  // Throw an error message if the user is not logged in.
   if (!userId) {
-    return res.redirect('/login');
+    return res.status(401).send('You must login to proceed.');
   }
 
   // Throw an error if the user does not own the specific URL.
@@ -347,11 +347,20 @@ app.get("/u/:id", (req, res) => {
 });
 
 /**
+ * Handle the "/" route
  * 
  */
 app.get("/", (req, res) => {
-  // Redirect to our Main Page.
-  res.redirect('/urls');
+  const userId = req.session.userId;
+
+  if (userId) {
+    // If the user is logged in, redirect them to our Main Page.
+    res.redirect('/urls');
+  } else {    
+    // If the user is not logged in, redirect them to the Login Page
+    return res.redirect('/login');
+  }
+
 });
 
 /**
