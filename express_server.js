@@ -3,6 +3,7 @@ const morgan = require("morgan");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
 const {generateRandomString, getUserByEmail, urlsForUser} = require("./helpers");
+const {urlDatabase, users} = require("./data");
 const PORT = 8080; // default port 8080
 const app = express();
 
@@ -16,38 +17,6 @@ app.use(cookieSession({
   keys: ["54RFZBOWXbv2dp979wqM"],
   maxAge: 24 * 60 * 60 * 1000, // 24 hours
 }));
-
-
-/**
- * This is our database. 🙂
- */
-const urlDatabase = {
-  "1DbaZv": {
-    longURL: "https://www.tsn.ca",
-    userId: "lSHoYY",
-  },
-  VkXQck: {
-    longURL: "https://www.google.ca",
-    userId: "lSHoYY",
-  },
-  eMe7jn: {
-    longURL: "https://www.lighthouselabs.ca",
-    userId: "Hh65Sm",
-  },
-};
-
-const users = {
-  lSHoYY: {
-    id: "lSHoYY",
-    email: "a@a.com",
-    password: bcrypt.hashSync("1234", 10),
-  },
-  Hh65Sm: {
-    id: "Hh65Sm",
-    email: "b@b.com",
-    password: bcrypt.hashSync("1234", 10),
-  },
-};
 
 
 /**
